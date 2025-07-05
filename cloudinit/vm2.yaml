@@ -1,0 +1,18 @@
+#cloud-config
+hostname: vm2
+manage_etc_hosts: true
+
+users:
+  - name: lucas-ponce
+    plain_text_passwd: "123"
+    lock_passwd: false
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCu...  # sua chave aqui
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+
+network:
+  version: 2
+  ethernets:
+    ens3:
+      dhcp4: true

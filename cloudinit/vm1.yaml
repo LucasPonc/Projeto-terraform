@@ -1,0 +1,67 @@
+#cloud-config
+hostname: vm1
+manage_etc_hosts: true
+
+users:
+  - name: lucas-ponce
+    plain_text_passwd: "123"
+    lock_passwd: false
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCu...  # sua chave aqui
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+
+write_files:
+  - path: /root/setup-dhcpconfig.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+
+      echo "[*] Aplicando IP fixo..."
+
+      cat > /etc/netplan/50-cloud-init.yaml <<EOF
+      network:
+        version: 2
+        ethernets:
+          ens3:
+            dhcp4: no
+            addresses:
+              - 192.168.18.10/24
+            gateway4: 192.168.18.1
+            nameservers:
+              addresses: [8.8.8.8, 1.1.1.1]
+      EOF
+
+      netplan apply
+      echo "[+] IP fixo aplicado!"
+
+      echo "[*] Instalando isc-dhcp-server com retry..."
+      for i in {1..5}; do
+        apt update && apt install -y isc-dhcp-server && break
+        echo "[!] Tentativa $i falhou. Tentando novamente em 5 segundos..."
+        sleep 5
+      done
+
+      echo "[*] Configurando dhcpd.conf..."
+      cat > /etc/dhcp/dhcpd.conf <<EOF
+      default-lease-time 600;
+      max-lease-time 7200;
+      authoritative;
+      subnet 192.168.18.0 netmask 255.255.255.0 {
+        range 192.168.18.30 192.168.18.50;
+        option routers 192.168.18.10;
+        option domain-name-servers 8.8.8.8;
+      }
+      EOF
+
+      echo 'INTERFACESv4="ens3"' > /etc/default/isc-dhcp-server
+
+      echo "[*] Ativando serviço..."
+      systemctl enable isc-dhcp-server
+      systemctl restart isc-dhcp-server
+      systemctl status isc-dhcp-server --no-pager
+
+runcmd:
+  - sleep 10
+  - bash /root/setup-dhcpconfig.sh

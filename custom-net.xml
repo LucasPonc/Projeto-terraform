@@ -1,0 +1,7 @@
+<network>
+  <name>custom-net</name>
+  <uuid>d46f7807-75d2-411d-88b3-0cdd56d9d195</uuid>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <forward mode='nat'/>
+  <ip address='192.168.18.1' netmask='255.255.255.0'/>
+</network>
