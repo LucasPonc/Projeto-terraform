@@ -45,8 +45,9 @@ Esse comando desfaz todas as alterações e remove os recursos criados.
 # Estrutura Básica
 ```
 Projeto-terraform/
-├── main.tf           # Definições principais dos recursos
-├── provider.tf       # Configuração do provedor
-├── variables.tf      # Variáveis utilizadas
-├── outputs.tf        # Informações de saída após criação
-└── terraform.tfvars  # Valores atribuídos às variáveis****
+├── custom-net.xml
+├── main.tf
+├── terraform.lock.hcl
+├── terraform.tfstate
+├── terraform.tfstate.backup
+
